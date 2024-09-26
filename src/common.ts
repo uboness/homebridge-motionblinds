@@ -6,6 +6,16 @@ export const isUndefined = (value: any): value is undefined => value === undefin
 export const isString = (value: any): value is string => !isNil(value) && typeof value === 'string';
 export const isBoolean = (value: any): value is boolean => !isNil(value) && typeof value === 'boolean';
 export const isNumber = (value: any): value is number => !isNil(value) && typeof value === 'number';
+export const isError = (value: any): value is Error => !isNil(value) && Object.prototype.toString.call(value) === '[object Error]';
+
+export type JSONPrimitive = string | number | boolean | null;
+export type JSONArray = JSONValue[];
+export type JSONValue =  JSONPrimitive | JSONObject | JSONArray;
+export type JSONObject = { [key: string]: JSONValue };
+
+export const bound = (value: number, min: number, max: number) => {
+    return Math.min(Math.max(min, value), max)
+}
 
 export const cleanMapAsync = async <K extends string = string, V = any>(map: { [key in K]: V }, cb: (key: K, val: V) => void | Promise<void>) => {
     for (let key of Object.keys(map)) {
@@ -14,6 +24,17 @@ export const cleanMapAsync = async <K extends string = string, V = any>(map: { [
         await cb(key as K, val);
     }
 }
+
+export function reverseMap<K extends string | number, V extends string | number>(map: { [key in K]: V }): { [key in V]: K } {
+    return Object.keys(map).reduce((result, key) => {
+        result[map[key]] = key;
+        return result;
+    }, { } as { [key in V]: K });
+}
+
+// export const reverseMap = <K, V>(map: { [key: K]}: V }): { [key: map[K]]: K } => {
+//
+// }
 
 export const cleanArrayAsync = async <T = any>(array: T[], cb: (value: T) => void | Promise<void>) => {
     while (array.length > 0) {

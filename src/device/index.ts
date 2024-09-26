@@ -1,10 +1,10 @@
+import { MotionBridge } from '../bridge/index.js';
 import { Device } from './Device.js';
-import { Light } from './Light.js';
-import { __Name__Device } from '../bridge/__Name__Device.js';
+import { RollerBlinds } from './RollerBlinds.js';
 
 export * from './Device.js';
-export * from './Light.js';
+export * from './RollerBlinds.js';
 
-export const Devices: { [type in __Name__Device['type']]?: Device.Factory } = {
-    'light': Light
+export const Devices: { [type in MotionBridge.Device['type']]?: Device.Factory } = {
+    'blinds': RollerBlinds
 }

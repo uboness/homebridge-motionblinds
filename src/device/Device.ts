@@ -1,33 +1,35 @@
-import { __Name__Platform } from '../__Name__Platform.js';
+import { MotionBlindsPlatform } from '../MotionBlindsPlatform.js';
 import { PlatformAccessory, Service } from 'homebridge';
-import { __Name__Bridge } from '../bridge/index.js';
+import { MotionBridge } from '../bridge/index.js';
 import { ILogger } from '../Logger.js';
-import { __Name__Device } from '../bridge/__Name__Device.js';
+import DeviceConfig = MotionBridge.DeviceConfig;
 
 export abstract class Device {
 
-    readonly bridge: __Name__Bridge;
-    readonly platform: __Name__Platform;
+    readonly bridge: MotionBridge;
+    readonly platform: MotionBlindsPlatform;
     readonly accessory: PlatformAccessory;
-    readonly primaryService: Service;
-    readonly device: __Name__Device;
+    readonly service: Service;
+    readonly device: MotionBridge.Device;
+    readonly config: DeviceConfig;
     readonly logger: ILogger;
 
     private _available: boolean;
 
-    protected constructor(platform: __Name__Platform, bridge: __Name__Bridge, accessory: PlatformAccessory, device: __Name__Device, primaryService: Service) {
+    protected constructor(platform: MotionBlindsPlatform, bridge: MotionBridge, accessory: PlatformAccessory, device: MotionBridge.Device, config: DeviceConfig, primaryService: Service) {
         this.platform = platform;
         this.bridge = bridge;
         this.accessory = accessory;
-        this.logger = platform.logger.getLogger(this.type, this.name);
-        this.primaryService = primaryService;
         this.device = device;
+        this.config = config;
+        this.logger = platform.logger.getLogger(this.type, this.name);
+        this.service = primaryService;
         this._available = true;
-        this.primaryService.setPrimaryService(true);
-        this.primaryService.setCharacteristic(platform.Characteristic.Name, accessory.displayName);
-        let status = this.primaryService.getCharacteristic(platform.Characteristic.StatusActive);
+        this.service.setPrimaryService(true);
+        this.service.setCharacteristic(platform.Characteristic.Name, accessory.displayName);
+        let status = this.service.getCharacteristic(platform.Characteristic.StatusActive);
         if (!status) {
-            status = this.primaryService.addCharacteristic(platform.Characteristic.StatusActive);
+            status = this.service.addCharacteristic(platform.Characteristic.StatusActive);
         }
         status.setValue(this.available);
     }
@@ -50,10 +52,10 @@ export abstract class Device {
 
     set available(available: boolean) {
         this._available = available;
-        this.primaryService.getCharacteristic(this.platform.Characteristic.StatusActive).updateValue(available);
+        this.service.getCharacteristic(this.platform.Characteristic.StatusActive).updateValue(available);
     }
 
-    abstract update(state: __Name__Device.State);
+    abstract update(state: MotionBridge.Device.WriteState);
 
     abstract close(): Promise<void>;
 }
@@ -61,7 +63,7 @@ export abstract class Device {
 export namespace Device {
 
     export type Factory<T extends Device = Device> = {
-        create: (platform: __Name__Platform, bridge: __Name__Bridge, accessory: PlatformAccessory, device: __Name__Device) => Promise<T>
+        create: (platform: MotionBlindsPlatform, bridge: MotionBridge, accessory: PlatformAccessory, device: MotionBridge.Device, config: MotionBridge.DeviceConfig) => Promise<T>
     }
 
 }

@@ -1,15 +1,93 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "MotionBlinds",
   "pluginType": "platform",
   "singular": true,
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
-        "type": "string",
-        "required": true,
-        "default": "Example Dynamic Platform"
+      "bridges": {
+        "type": "array",
+        "title": "MOTION Wi-Fi Bridges",
+        "items": {
+          "title": "Bridge",
+          "type": "object",
+          "properties": {
+            "ip": {
+              "title": "IP",
+              "type": "string",
+              "required": true,
+              "format": "hostname"
+            },
+            "key": {
+              "title": "API Key",
+              "type": "string",
+              "required": true,
+              "description": "Get the key by tapping a few times on the 'About MOTION' page under Settings in the MotionBlinds app"
+            },
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "required": false,
+              "description": "A friendly name to identify the bridge. Defaults to the bridge's (unfriendly) MAC address",
+              "minLength": 1
+            },
+            "deviceDefaults": {
+              "title": "Device Defaults",
+              "type": "object",
+              "description": "When set, these settings will apply to all devices (unless overridden individually per device)",
+              "properties": {
+                "stopButton": {
+                  "title": "Add Stop Button",
+                  "type": "boolean",
+                  "required": false,
+                  "description": "When 'true' a switch button will be added to the accessory which when pressed will signal the curtain to stop it's motion"
+                },
+                "invertOpenClose": {
+                  "title": "Invert Open/Close",
+                  "type": "boolean",
+                  "required": false,
+                  "description": "Inverts the notion of opened and closed curtain (ie. is 100% considered fully closed or fully opened)"
+                }
+              }
+            },
+            "devices": {
+              "type": "array",
+              "title": "Per-Device Settings",
+              "items": {
+                "title": "Device",
+                "type": "object",
+                "properties": {
+                  "mac": {
+                    "title": "MAC Address",
+                    "type": "string",
+                    "required": true,
+                    "description": "The MAC address of the device (used as the device identifiers)",
+                    "minLength": 1
+                  },
+                  "name": {
+                    "title": "Name",
+                    "type": "string",
+                    "required": false,
+                    "description": "A friendly name for the device. Defaults the the (less friendly) MAC address",
+                    "minLength": 1
+                  },
+                  "stopButton": {
+                    "title": "Add Stop Button",
+                    "type": "boolean",
+                    "required": false,
+                    "description": "When 'true' a switch button will be added to this accessory which when pressed will signal the curtain to stop it's motion"
+                  },
+                  "invertOpenClose": {
+                    "title": "Invert Open/Close",
+                    "type": "boolean",
+                    "required": false,
+                    "description": "Inverts the notion of opened and closed curtain (ie. is 100% considered fully closed or fully opened)"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
