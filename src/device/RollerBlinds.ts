@@ -1,6 +1,6 @@
 import { PlatformAccessory, Service } from 'homebridge';
 import { MotionBridge } from '../bridge/index.js';
-import { isBoolean, isNumber } from '../common.js';
+import { isBoolean, isNumber, isString } from '../common.js';
 import { MotionBlindsPlatform } from '../MotionBlindsPlatform.js';
 import { Device } from './Device.js';
 
@@ -9,6 +9,15 @@ export class RollerBlinds extends Device {
     static readonly create = async (platform: MotionBlindsPlatform, bridge: MotionBridge, accessory: PlatformAccessory, device: MotionBridge.Device, config: MotionBridge.DeviceConfig) => {
         return new RollerBlinds(platform, bridge, accessory, device, config);
     }
+
+    // The bridge polls the devices for their states and tries to update them. This device can decide to skip
+    // these updates based on its state. For example, when an operation is originated from this device, 'open' or 'close'
+    // we mark the position state as "opening" or "closing" respectfully, if an update arrives right after the change
+    // it might change its position state back to `stop` (this is because some devices only send their "stop" state).
+    // Since each update is associated with an update type (`report`, `poll` or `force`), the device can decide to skip
+    // updates for a certain periods (it will work well as long as all the update originate here, but there may be "glitches"
+    // if the updates is originated somewhere else, e.g. remote or manual pull)
+    private skipPollUpdatesUntil?: number;
 
     private battery?: Service;
     private stopButton?: Service;
@@ -71,7 +80,7 @@ export class RollerBlinds extends Device {
             this.device.state.operation === 'open' ? increasingState :
                 this.platform.Characteristic.PositionState.STOPPED;
         this.service.getCharacteristic(platform.Characteristic.PositionState)
-            .setValue(operationState)
+            .setValue(operationState);
 
         this.service.getCharacteristic(platform.Characteristic.CurrentPosition)
             .setValue(this.resolvePosition(device.state.position));
@@ -80,24 +89,43 @@ export class RollerBlinds extends Device {
             .setValue(this.resolvePosition(device.state.position))
             .onSet(async value => {
                 const oldPosition = this.device.state.position;
-                this.device.state.position = this.resolvePosition(<number>value);
-                if (oldPosition === this.device.state.position) {
+                const newPosition = this.resolvePosition(<number>value);
+                this.device.state.position = newPosition;
+                if (oldPosition === newPosition) {
                     return;
                 }
+
                 await bridge.updateDevice(device.id, { position: this.device.state.position });
-                const positionState = oldPosition > this.device.state.position ? decreasingState : increasingState;
+
+                // computing update skipping time
+                const now = Date.now();
+                const positionDelta = Math.abs(oldPosition-newPosition);
+                const motionTime = Math.trunc((positionDelta / 100) * this.config.openCloseTime);
+                this.skipPollUpdatesUntil = now + motionTime;
+
+                const positionState = oldPosition > newPosition ? decreasingState : increasingState;
                 setTimeout(() => {
                     this.service.setCharacteristic(platform.Characteristic.PositionState, positionState)
-                }, 50);
+                }, 500);
             });
     }
 
-    update(state: MotionBridge.Device.State) {
+    update(state: MotionBridge.Device.State, type: MotionBridge.UpdateType) {
 
-        // the MOTION bridge only reports an update once the blind operation stopped, so the position state will
-        // always be stopped
-        this.device.state.operation = 'stop';
-        this.service.setCharacteristic(this.platform.Characteristic.PositionState, this.platform.Characteristic.PositionState.STOPPED);
+        if (type === MotionBridge.UpdateType.Poll && this.skipPollUpdatesUntil && this.skipPollUpdatesUntil > Date.now()) {
+            this.logger.debug(`Skipping poll update until [${new Date(this.skipPollUpdatesUntil)}]`);
+            return;
+        }
+        this.skipPollUpdatesUntil = undefined;
+        this.logger.debug(`[${MotionBridge.UpdateType[type]}] updating...`);
+
+        if (isString(state.operation)) {
+            this.device.state.operation = state.operation;
+            const positionState = state.operation == 'open' ? this.resolvePositionState(this.platform.Characteristic.PositionState.INCREASING) :
+                state.operation === 'close' ? this.resolvePositionState(this.platform.Characteristic.PositionState.DECREASING) :
+                    this.platform.Characteristic.PositionState.STOPPED;
+            this.service.setCharacteristic(this.platform.Characteristic.PositionState, positionState);
+        }
 
         if (isNumber(state.batteryLevel) && this.battery) {
             this.device.state.batteryLevel = state.batteryLevel;
@@ -121,9 +149,12 @@ export class RollerBlinds extends Device {
     }
 
     private resolvePositionState(positionState: number): number {
-        return positionState === this.platform.Characteristic.PositionState.DECREASING ? this.platform.Characteristic.PositionState.INCREASING :
-            positionState === this.platform.Characteristic.PositionState.INCREASING ? this.platform.Characteristic.PositionState.DECREASING :
-                positionState;
+        if (this.config.invertOpenClose) {
+            return positionState === this.platform.Characteristic.PositionState.DECREASING ? this.platform.Characteristic.PositionState.INCREASING :
+                positionState === this.platform.Characteristic.PositionState.INCREASING ? this.platform.Characteristic.PositionState.DECREASING :
+                    positionState;
+        }
+        return positionState;
     }
 
     private resolvePosition(position: number): number {

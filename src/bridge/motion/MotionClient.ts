@@ -103,6 +103,12 @@ export class MotionClient {
             this.emitter.emit('error', error);
         });
 
+        this.sendSocket.on('close', () => {
+            if (this.callbacks.size) {
+                this.callbacks.forEach((callback, _) => callback(new Error('disconnected')))
+            }
+        });
+
         this.sendSocket.on('message', (payload, rinfo) => {
             this.resetHeartbeat();
             const resp = parseJSON<API.Response>(payload);
@@ -147,7 +153,7 @@ export class MotionClient {
                     this.logger.debug(`heartbeat received (after ${afterSec} sec)`);
                 }
             } else if (isReport(notification)) {
-                this.emitter.emit('deviceUpdate', notification, rinfo);
+                this.emitter.emit('report', notification, rinfo);
             } else {
                 this.logger.warn(`Unknown notification [${JSON.stringify(notification, undefined, 2)}]`);
             }
@@ -163,7 +169,6 @@ export class MotionClient {
                         recvSocket.setMulticastInterface(this.config.multicastInterface);
                     }
                     recvSocket.addMembership(MULTICAST_IP, this.config.multicastInterface);
-                    //TODO why do we need broadcasting on the receiving socket?
                     recvSocket.setBroadcast(true);
                     recvSocket.setMulticastTTL(128);
                     resolve();
@@ -231,8 +236,8 @@ export class MotionClient {
     on(event: 'availability', handler: Availability.Handler): Detachable;
     on(event: 'heartbeat', handler: (heartbeat: API.Heartbeat) => void): Detachable;
     on(event: 'error', handler: (err: Error) => void): Detachable;
-    on(event: 'deviceUpdate', handler: (device: API.MotionDevice) => void): Detachable;
-    on(event: 'availability' | 'heartbeat' | 'error' | 'deviceUpdate', handler: (...args: any[]) => void): Detachable {
+    on(event: 'report', handler: (device: API.MotionDevice) => void): Detachable;
+    on(event: 'availability' | 'heartbeat' | 'report' | 'error', handler: (...args: any[]) => void): Detachable {
         if (event === 'availability') {
             return this.availability.on('change', handler);
         }
@@ -240,6 +245,20 @@ export class MotionClient {
         return {
             detach: () => this.emitter.off(event, handler)
         };
+    }
+
+    requestUpdate(mac: string, deviceType: API.DeviceType) {
+        if (!this.token) {
+            return Promise.reject(`missing token or accessToken (call getDeviceList)`)
+        }
+        this.sendReceive<API.WriteDeviceReq, undefined>({
+            msgID: this.msgIdGenerator.next(),
+            msgType: 'WriteDevice',
+            mac,
+            deviceType,
+            data: { operation: 5 },
+            AccessToken: this.accessToken(this.config.key, this.token),
+        }).then();
     }
 
     async getDevice(mac: string, deviceType: API.DeviceType): Promise<API.MotionDevice | undefined> {
@@ -310,10 +329,9 @@ export class MotionClient {
         )
     }
 
-    private sendReceive<Req extends API.Request, Resp extends (API.Response | undefined)>(req: Req, waitHandle: string, retry = 0): Promise<Resp> {
+    private sendReceive<Req extends API.Request, Resp extends (API.Response | undefined)>(req: Req, waitHandle?: string, retry = 0): Promise<Resp> {
         req.msgID = this.msgIdGenerator.next();
         const payload = JSON.stringify(req)
-
         return new Promise<Resp>((resolve, reject) => {
             if (!this.sendSocket) {
                 return reject(new Error(`not connected`))
@@ -322,37 +340,44 @@ export class MotionClient {
             //todo not sure about the reason for the randomness here
             const timeoutMs = RETRY_MS[retry] ?? RETRY_MS[RETRY_MS.length - 1] + Math.trunc(Math.random() * 100);
 
-            const timer = setTimeout(() => {
-                if (retry < MAX_RETRIES) {
-                    this.sendReceive<Req, Resp>(req, waitHandle, retry + 1).then(resolve, reject)
-                } else {
-                    this.callbacks.delete(waitHandle)
-                    reject(new Error(`timed out after ${timeoutMs}ms`))
-                }
-            }, timeoutMs);
+            let timer: any;
+            if (waitHandle) {
 
-            this.callbacks.set(waitHandle, (resp) => {
-                clearTimeout(timer);
-                this.callbacks.delete(waitHandle);
-                if (isError(resp)) {
-                    return reject(resp);
-                }
-                if (!!resp.data) {
-                    return resolve(resp as Resp);
-                }
-                if (resp.actionResult === 'device not exist') {
-                    return resolve(undefined as Resp);
-                }
-                if (!!resp.actionResult) {
-                    return reject(new Error(resp.actionResult));
-                }
-                return reject(new Error(`Failed to execute [${req.msgType}]`));
-            })
+                timer = setTimeout(() => {
+                    if (retry < MAX_RETRIES) {
+                        this.sendReceive<Req, Resp>(req, waitHandle, retry + 1).then(resolve, reject)
+                    } else {
+                        this.callbacks.delete(waitHandle)
+                        reject(new Error(`timed out after ${timeoutMs}ms`))
+                    }
+                }, timeoutMs);
+
+                this.callbacks.set(waitHandle, (resp) => {
+                    clearTimeout(timer);
+                    this.callbacks.delete(waitHandle);
+                    if (isError(resp)) {
+                        return reject(resp);
+                    }
+                    if (!!resp.data) {
+                        return resolve(resp as Resp);
+                    }
+                    if (resp.actionResult === 'device not exist') {
+                        return resolve(undefined as Resp);
+                    }
+                    if (!!resp.actionResult) {
+                        return reject(new Error(resp.actionResult));
+                    }
+                    return reject(new Error(`Failed to execute [${req.msgType}]`));
+                })
+
+            }
 
             this.sendSocket.send(payload, UDP_PORT_SEND, this.config.ip, (err, _) => {
                 if (err) {
-                    clearTimeout(timer)
-                    this.callbacks.delete(waitHandle)
+                    if (waitHandle) {
+                        clearTimeout(timer)
+                        this.callbacks.delete(waitHandle)
+                    }
                     reject(err)
                 }
             })

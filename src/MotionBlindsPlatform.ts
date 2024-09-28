@@ -123,21 +123,13 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
                 }
             });
 
-            bridge.on('deviceStateChanged', change => {
-                const device = this.devices[bridgeId].find(device => device.id === change.deviceId);
+            bridge.on('deviceUpdate', ((update, source) => {
+                const device = this.devices[bridgeId].find(device => device.id === update.deviceId);
                 if (device) {
-                    this.log.debug(`hub [${bridge.name}] device [${device.device.name}] state changed [${JSON.stringify(change)}]`);
-                    device.update(change.state);
+                    this.log.debug(`hub [${bridge.name}] device [${device.device.name}] state changed [${JSON.stringify(update)}]`);
+                    device.update(update.state, source);
                 }
-            });
-
-            // bridge.on('deviceAdded', device => {
-            //     this.registerDevice(bridge, device);
-            // });
-            //
-            // bridge.on('deviceRemoved', event => {
-            //     this.unregisterDevice(bridge, event.deviceId);
-            // });
+            }));
         }
 
         this.log.info(`initialized`);
@@ -159,7 +151,7 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
             const freshDevice = freshDevices.find(freshDevice => freshDevice.id === knownDevice.id);
             if (freshDevice) {
                 // the known device still exists in the hub... we'll just update its attributes
-                await knownDevice.update(freshDevice.state);
+                await knownDevice.update(freshDevice.state, MotionBridge.UpdateType.Force);
             } else {
                 // the know device no longer exists in the hub, we'll need to remove/unregister it
                 await this.unregisterDevice(bridge, knownDevice);
@@ -219,6 +211,7 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
             name: deviceName,
             invertOpenClose: false,
             stopButton: false,
+            openCloseTime: MotionBridge.DEFAULT_OPEN_CLOSE_TIME,
             ...(bridge.config.deviceDefaults ?? {}),
             ...(bridge.config.devices?.[device.mac] ?? {})
         };

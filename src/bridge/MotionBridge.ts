@@ -1,10 +1,14 @@
 import EventEmitter from 'events';
+import { clearTimeout } from 'timers';
 import { Availability } from '../Availability.js';
-import { Detachable, isNil, isUndefined } from '../common.js';
+import { bound, Detachable, isNil, isUndefined } from '../common.js';
 import { ILogger } from '../Logger.js';
 import { API, MotionClient } from './motion/index.js';
 
 export class MotionBridge {
+
+    static readonly DEFAULT_OPEN_CLOSE_TIME= 60; //seconds
+    static readonly DEFAULT_POLL_INTERVAL= 60;   //seconds
 
     static async create(config: MotionBridge.Config, logger: ILogger): Promise<MotionBridge> {
         if (isNil(config.ip)) {
@@ -28,9 +32,13 @@ export class MotionBridge {
 
     private readonly emitter = new EventEmitter();
 
+    private pollingTimeout: any;
+    private readonly pollInterval: number;
+
     constructor(config: MotionBridge.Config, client: MotionClient, logger: ILogger) {
         this.config = config;
         this.client = client;
+        this.pollInterval = bound(config.pollInterval ?? MotionBridge.DEFAULT_POLL_INTERVAL, 30, Number.MAX_VALUE) * 1000;
         this.logger = logger.getLogger('bridge', config.name ?? config.ip);
     }
 
@@ -50,16 +58,18 @@ export class MotionBridge {
         this.client.on('error', error => {
             this.logger.error(`Bridge encountered an error. ${error}`);
         });
-        this.client.on('deviceUpdate', (device) => {
-            const change = toStateChange(device);
-            this.emitter.emit('deviceStateChanged', change);
+        this.client.on('report', (device) => {
+            const update = toUpdate(device);
+            this.emitter.emit('deviceUpdate', update, MotionBridge.UpdateType.Report);
         });
         await this.client.start();
+        this.pollDevices().then()
         this.logger.debug(`Bridge client started [${this.config.ip}], name [${this.config.name}]`);
     }
 
     async close() {
         this.logger.info(`closing...`);
+        this.stopPolling();
         await this.client.close();
         this.emitter.removeAllListeners();
     }
@@ -93,25 +103,43 @@ export class MotionBridge {
     }
 
     on(event: "availability", handler: Availability.Handler): Detachable ;
-    on(event: "deviceStateChanged", handler: (event: MotionBridge.Device.StateChange) => void): Detachable;
-    on(event: "availability" | "deviceStateChanged", handler: (event: any) => void): Detachable {
+    on(event: "deviceUpdate", handler: MotionBridge.DeviceUpdateHandler): Detachable;
+    on(event: "availability" | "deviceUpdate", handler: Availability.Handler | MotionBridge.DeviceUpdateHandler): Detachable {
         switch (event) {
             case 'availability':
-                return this.client.availability.on('change', handler);
+                return this.client.availability.on('change', handler as Availability.Handler);
             default:
-                this.emitter.on('deviceStateChanged', handler);
-                return { detach: () => this.emitter.off('deviceStateChanged', handler) };
+                this.emitter.on('deviceUpdate', handler as MotionBridge.DeviceUpdateHandler);
+                return { detach: () => this.emitter.off('deviceUpdate', handler) };
         }
+    }
+
+    private async pollDevices() {
+        this.logger.debug(`polling devices...`);
+        const devices = await this.client.getAllDevices();
+        const now = Date.now();
+        clearTimeout(this.pollingTimeout);
+        this.pollingTimeout = setTimeout(this.pollDevices.bind(this), this.pollInterval);
+        for (const device of devices) {
+            this.emitter.emit('deviceUpdate', toUpdate(device), MotionBridge.UpdateType.Poll);
+        }
+    }
+
+    private stopPolling() {
+        clearTimeout(this.pollingTimeout);
+        this.pollingTimeout = undefined;
     }
 }
 
 
 export namespace MotionBridge {
 
+
     export type Config = {
         ip: string,
         key: string,
         name?: string,
+        pollInterval?: number, //min 60 seconds
         deviceDefaults?: Partial<Omit<DeviceConfig, 'name'>>,
         devices?: {
             [mac: string]: Partial<DeviceConfig>
@@ -121,7 +149,15 @@ export namespace MotionBridge {
     export type DeviceConfig = {
         name: string,
         stopButton: boolean;
-        invertOpenClose: boolean
+        invertOpenClose: boolean,
+        openCloseTime: number
+    }
+
+    export type DeviceUpdateHandler = (device: Device.Update, type: UpdateType) => void | Promise<void>;
+    export enum UpdateType {
+        Report,
+        Poll,
+        Force
     }
 
     export type Device = {
@@ -147,7 +183,7 @@ export namespace MotionBridge {
             signalStrength: number
         }
 
-        export type StateChange = {
+        export type Update = {
             deviceId: string;
             state: Partial<State>;
         }
@@ -195,7 +231,7 @@ export const toDeviceUpdate = (state: MotionBridge.Device.WriteState): API.Devic
     };
 }
 
-export const toStateChange = (apiDevice: API.MotionDevice): MotionBridge.Device.StateChange => {
+export const toUpdate = (apiDevice: API.MotionDevice): MotionBridge.Device.Update => {
     return {
         deviceId: apiDevice.mac,
         state: toState(apiDevice)

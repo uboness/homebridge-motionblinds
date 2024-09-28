@@ -55,7 +55,7 @@ export abstract class Device {
         this.service.getCharacteristic(this.platform.Characteristic.StatusActive).updateValue(available);
     }
 
-    abstract update(state: MotionBridge.Device.WriteState);
+    abstract update(state: MotionBridge.Device.WriteState, type: MotionBridge.UpdateType);
 
     abstract close(): Promise<void>;
 }

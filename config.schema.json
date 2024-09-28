@@ -31,6 +31,12 @@
               "description": "A friendly name to identify the bridge. Defaults to the bridge's (unfriendly) MAC address",
               "minLength": 1
             },
+            "pollInterval": {
+              "title": "Poll Interval",
+              "type": "number",
+              "required": false,
+              "description": "Determines how often (in seconds) the plugin will proactively poll for the state of bridge devices (default: 60 sec)"
+            },
             "deviceDefaults": {
               "title": "Device Defaults",
               "type": "object",
@@ -47,6 +53,12 @@
                   "type": "boolean",
                   "required": false,
                   "description": "Inverts the notion of opened and closed curtain (ie. is 100% considered fully closed or fully opened)"
+                },
+                "openCloseInterval": {
+                  "title": "Open/Close Interval",
+                  "type": "number",
+                  "required": false,
+                  "description": "The time (in seconds) it takes to fully open or close the curtain. This will help in determining when to force update the curtain device"
                 }
               }
             },
@@ -82,6 +94,12 @@
                     "type": "boolean",
                     "required": false,
                     "description": "Inverts the notion of opened and closed curtain (ie. is 100% considered fully closed or fully opened)"
+                  },
+                  "openCloseInterval": {
+                    "title": "Open/Close Interval",
+                    "type": "number",
+                    "required": false,
+                    "description": "The time (in seconds) it takes to fully open or close the curtain. This will help in determining when to force update the curtain device (default: 60 sec)"
                   }
                 }
               }

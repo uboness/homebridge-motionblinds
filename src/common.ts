@@ -17,6 +17,14 @@ export const bound = (value: number, min: number, max: number) => {
     return Math.min(Math.max(min, value), max)
 }
 
+export const clearMap = <K extends string = string, V = any>(map: { [key in K]: V}, cb?: (key: K, val: V) => void) => {
+    for (const key of Object.keys(map)) {
+        const val = map[key];
+        delete map[key];
+        cb?.(key as K, val);
+    }
+}
+
 export const cleanMapAsync = async <K extends string = string, V = any>(map: { [key in K]: V }, cb: (key: K, val: V) => void | Promise<void>) => {
     for (let key of Object.keys(map)) {
         const val = map[key];
