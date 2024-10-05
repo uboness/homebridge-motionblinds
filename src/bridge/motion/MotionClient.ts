@@ -55,13 +55,6 @@ export class MotionClient {
         this.availability = new Availability(false);
     }
 
-    get id() {
-        if (!this.mac) {
-            throw new Error(`Client id is only available post start`);
-        }
-        return this.mac;
-    }
-
     async start() {
         await this.connect();
         this.emitter.on('error', error => {

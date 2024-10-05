@@ -1,5 +1,5 @@
 import { MotionBlindsPlatform } from '../MotionBlindsPlatform.js';
-import { PlatformAccessory, Service } from 'homebridge';
+import { Characteristic, PlatformAccessory, Service, WithUUID } from 'homebridge';
 import { MotionBridge } from '../bridge/index.js';
 import { ILogger } from '../Logger.js';
 import DeviceConfig = MotionBridge.DeviceConfig;
@@ -14,7 +14,10 @@ export abstract class Device {
     readonly config: DeviceConfig;
     readonly logger: ILogger;
 
-    private _available: boolean;
+    readonly statusActive: Characteristic;
+    readonly statusFault: Characteristic;
+
+    private _available: boolean = false;
 
     protected constructor(platform: MotionBlindsPlatform, bridge: MotionBridge, accessory: PlatformAccessory, device: MotionBridge.Device, config: DeviceConfig, primaryService: Service) {
         this.platform = platform;
@@ -24,15 +27,14 @@ export abstract class Device {
         this.config = config;
         this.logger = platform.logger.getLogger(this.type, this.name);
         this.service = primaryService;
-        this._available = true;
         this.service.setPrimaryService(true);
         this.service.setCharacteristic(platform.Characteristic.Name, accessory.displayName);
-        let status = this.service.getCharacteristic(platform.Characteristic.StatusActive);
-        if (!status) {
-            status = this.service.addCharacteristic(platform.Characteristic.StatusActive);
-        }
-        status.setValue(this.available);
+        this.statusActive = this.service.getCharacteristic(platform.Characteristic.StatusActive) ?? this.service.addCharacteristic(platform.Characteristic.StatusActive);
+        this.statusFault = this.service.getCharacteristic(platform.Characteristic.StatusFault) ?? this.service.addCharacteristic(platform.Characteristic.StatusFault);
+        this.available = true;
     }
+
+    abstract get primaryServiceType(): WithUUID<typeof Service>;
 
     get id() {
         return this.device.id;
@@ -52,7 +54,8 @@ export abstract class Device {
 
     set available(available: boolean) {
         this._available = available;
-        this.service.getCharacteristic(this.platform.Characteristic.StatusActive).updateValue(available);
+        this.statusActive.setValue(available);
+        this.statusFault.setValue(!available);
     }
 
     abstract update(state: MotionBridge.Device.WriteState, type: MotionBridge.UpdateType);

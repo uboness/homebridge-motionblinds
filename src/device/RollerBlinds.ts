@@ -1,4 +1,4 @@
-import { PlatformAccessory, Service } from 'homebridge';
+import { PlatformAccessory, Service, WithUUID } from 'homebridge';
 import { MotionBridge } from '../bridge/index.js';
 import { isBoolean, isNumber, isString } from '../common.js';
 import { MotionBlindsPlatform } from '../MotionBlindsPlatform.js';
@@ -21,6 +21,10 @@ export class RollerBlinds extends Device {
 
     private battery?: Service;
     private stopButton?: Service;
+
+    get primaryServiceType(): WithUUID<typeof Service> {
+        return this.platform.Service.WindowCovering;
+    }
 
     private constructor(platform: MotionBlindsPlatform, bridge: MotionBridge, accessory: PlatformAccessory, device: MotionBridge.Device, deviceConfig: MotionBridge.DeviceConfig) {
         super(platform, bridge, accessory, device, deviceConfig, accessory.getService(platform.Service.WindowCovering) ?? accessory.addService(platform.Service.WindowCovering));
