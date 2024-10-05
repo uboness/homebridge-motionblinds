@@ -7,10 +7,9 @@ import {
     PlatformConfig,
     Service
 } from 'homebridge';
-import { asyncForEach, cleanArrayAsync, cleanMapAsync, isString, isUndefined, spliceFirstMatch } from './common.js';
-
-import { Device, Devices } from './device/index.js';
 import { MotionBridge } from './bridge/index.js';
+import { asyncForEach, cleanArrayAsync, cleanMapAsync, isString, isUndefined, spliceFirstMatch } from './common.js';
+import { Device, Devices } from './device/index.js';
 import { ContextLogger, ILogger } from './Logger.js';
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 import DeviceConfig = MotionBridge.DeviceConfig;
@@ -78,61 +77,111 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
         for (const bridgeConfig of bridgeConfigs) {
             try {
                 const bridge = await MotionBridge.create(bridgeConfig, this.logger);
-                this.log.info(`Bridge [${bridgeConfig.name}(${bridgeConfig.ip})] connected`);
-                await bridge.start();
                 this.bridges[bridge.id] = bridge;
                 this.devices[bridge.id] = [];
             } catch (error) {
-                this.log.error(`Failed to connect to bridge [${bridgeConfig.ip}]. ${error}`);
+                this.log.error(`Failed to load bridge [${bridgeConfig.id}]. Make sure it's properly configured  ${error}`);
+                throw error;
             }
         }
 
-        // first, let's clean up the cached accessories that are no long available
+        // now that all the bridges are loaded, we'll first clean up the cached accessories that
+        // belong to bridges that are no long available
         const indices: number[] = [];
         for (let i = 0; i < this.accessories.length; i++) {
             const accessory = this.accessories[i];
             const bridge = this.bridges[accessory.context.bridgeId];
             if (!bridge) {
                 this.log.info(`Unregistering accessory from bridge [${accessory.context.bridgeName}] and device [${accessory.displayName}] (MOTION bridge no longer available)`);
-                this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [ accessory ])
+                this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [ accessory ]);
                 indices.push(i);
-            } else {
+            }
+        }
+        indices.forEach(i => this.accessories.splice(i, 1));
+
+        for (const bridge of Object.values(this.bridges)) {
+            this.initBridge(bridge, 0, this.config.connectionRetries ?? 5);
+        }
+
+        this.log.info(`initialized`);
+    }
+
+    initBridge(bridge: MotionBridge, attempt: number, maxRetries: number) {
+        if (attempt === maxRetries) {
+            this.log.error(`Failed to connect to bridge [${bridge.name}][${bridge.ip}] ${maxRetries} times... aborting`);
+            return;
+        }
+        this.startBridge(bridge).catch(error => {
+            this.log.error(`Failed to connect to bridge [${bridge.ip}]. ${error}`);
+            const seconds = Math.pow(2, attempt) * 5;
+            this.log.info(`[${bridge.name}][${bridge.ip}] Retrying to connect in ${seconds} seconds`);
+            setTimeout(() => this.initBridge(bridge, attempt + 1, maxRetries), seconds * 1000);
+        });
+    }
+
+
+    async startBridge(bridge: MotionBridge) {
+        this.log.info(`Connecting to bridge [${bridge.ip}]...`);
+
+        try {
+            await bridge.start();
+        } catch (error) {
+
+            // we need to mark all the cached accessories belonging to this bridge as inactive
+            for (let i = 0; i < this.accessories.length; i++) {
+                const accessory = this.accessories[i];
+                if (accessory.context.bridgeId === bridge.id) {
+                    const service = accessory.getService(accessory.context.primaryService) ?? accessory.getService(this.Service.WindowCovering);
+                    if (service) {
+                        service.setCharacteristic(this.Characteristic.StatusFault, this.Characteristic.StatusFault.GENERAL_FAULT);
+                    }
+                }
+            }
+
+            throw error;
+        }
+
+        this.log.info(`Bridge [${bridge.name}(${bridge.ip})] connected`);
+        this.bridges[bridge.id] = bridge;
+        this.devices[bridge.id] = [];
+
+
+        // we'll first get rid of all accessories that are no longer available on the bridge
+        const indices: number[] = [];
+        for (let i = 0; i < this.accessories.length; i++) {
+            const accessory = this.accessories[i];
+            if (accessory.context.bridgeId === bridge.id) {
                 const device = await bridge.getDevice(accessory.context.deviceId);
                 if (!device) {
                     this.log.info(`Unregistering accessory from bridge [${accessory.context.bridgeName}] and device [${accessory.displayName}] (Device no longer available)`);
-                    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [ accessory ])
+                    this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [ accessory ]);
                     indices.push(i);
                 }
             }
         }
         indices.forEach(i => this.accessories.splice(i, 1));
 
-        // now register all accessories
-        for (const bridgeId in this.bridges) {
-            const bridge = this.bridges[bridgeId];
+        // now register all the bridge accessories
 
-            const devices = await bridge.listDevices();
-            for (const device of devices) {
-                await this.registerDevice(bridge, device);
-            }
-
-            bridge.on('availability', async (available, error) => {
-                this.devices[bridgeId].forEach(device => device.available = available);
-                if (available) {
-                    return this.refreshDevices(bridge);
-                }
-            });
-
-            bridge.on('deviceUpdate', ((update, source) => {
-                const device = this.devices[bridgeId].find(device => device.id === update.deviceId);
-                if (device) {
-                    this.log.debug(`hub [${bridge.name}] device [${device.device.name}] state changed [${JSON.stringify(update)}]`);
-                    device.update(update.state, source);
-                }
-            }));
+        const devices = await bridge.listDevices();
+        for (const device of devices) {
+            await this.registerDevice(bridge, device);
         }
 
-        this.log.info(`initialized`);
+        bridge.on('availability', async (available) => {
+            this.devices[bridge.id].forEach(device => device.setAvailable(available));
+            if (available) {
+                return this.refreshDevices(bridge);
+            }
+        });
+
+        bridge.on('deviceUpdate', ((update, source) => {
+            const device = this.devices[bridge.id].find(device => device.id === update.deviceId);
+            if (device) {
+                this.log.debug(`hub [${bridge.name}] device [${device.device.name}] state changed [${JSON.stringify(update)}]`);
+                device.update(update.state, source);
+            }
+        }));
 
     }
 
@@ -166,7 +215,7 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
 
     async registerDevice(bridge: MotionBridge, device: MotionBridge.Device) {
         if (isUndefined(Devices[device.type])) {
-            return
+            return;
         }
 
         // generate a unique id for the accessory this should be generated from
@@ -182,7 +231,7 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
         if (!accessory) {
             accessory = new this.api.platformAccessory(deviceName, uuid);
             accessory.context.bridgeId = bridge.id;
-            accessory.context.bridgeName = bridge.name
+            accessory.context.bridgeName = bridge.name;
             accessory.context.deviceId = device.id;
             accessory.context.deviceName = deviceName;
             this.logger.info(`[${bridge.name}] registering [${device.type}] device [${accessory.displayName}]`);
@@ -216,11 +265,13 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
             ...(bridge.config.devices?.[device.mac] ?? {})
         };
 
-        this.devices[bridge.id].push(await Devices[device.type]!.create(this, bridge, accessory, device, config));
+        const d = await Devices[device.type]!.create(this, bridge, accessory, device, config);
+        accessory.context.primaryService = d.primaryServiceType;
+        this.devices[bridge.id].push(d);
     }
 
     private async unregisterDevice(bridge: MotionBridge, deviceOrId: string | Device) {
-        const deviceId = isString(deviceOrId)? deviceOrId : deviceOrId.id;
+        const deviceId = isString(deviceOrId) ? deviceOrId : deviceOrId.id;
         const deviceIndex = this.devices[bridge.id].findIndex(device => device.id === deviceId);
         if (deviceIndex < 0) {
             this.log.debug(`device [${deviceOrId}] was removed from MOTION bridge [${bridge.name}] but was not registered with Homebridge`);
@@ -230,14 +281,14 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
         this.log.info(`[${bridge.name}] unregistering accessory [${registeredDevice.accessory.displayName}] (no longer available)`);
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [ registeredDevice.accessory ]);
         spliceFirstMatch(this.accessories, accessory => accessory.UUID === registeredDevice.accessory.UUID);
-        await registeredDevice.close()
+        await registeredDevice.close();
     }
 }
 
 const preProcessConfig = (config: PlatformConfig): PlatformConfig => {
-    const { bridges, ...newConfig  } = config;
+    const { bridges, ...newConfig } = config;
     newConfig.bridges = bridges.map(bridge => {
-        const { devices, ...newBridge} = bridge;
+        const { devices, ...newBridge } = bridge;
         newBridge.devices = devices.reduce((devices, device) => {
             const { mac, ...deviceConfig } = device;
             devices[mac] = deviceConfig;
@@ -246,4 +297,4 @@ const preProcessConfig = (config: PlatformConfig): PlatformConfig => {
         return newBridge;
     });
     return newConfig;
-}
+};

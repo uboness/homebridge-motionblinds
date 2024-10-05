@@ -41,6 +41,18 @@ export class Availability {
         }
     }
 
+    async await(available: boolean) {
+        return new Promise<void>(resolve => {
+            const handler = (state: boolean) => {
+                if (available === state) {
+                    this.emitter.off('change', handler);
+                    resolve();
+                }
+            }
+            this.emitter.on('change', handler)
+        })
+    }
+
     setAvailable(available: boolean, error?: string | Error) {
         clearTimeout(this.timeout);
         if (available && !!this.timeoutMillis) {
