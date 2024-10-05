@@ -11,6 +11,9 @@ export class MotionBridge {
     static readonly DEFAULT_POLL_INTERVAL= 60;   //seconds
 
     static async create(config: MotionBridge.Config, logger: ILogger): Promise<MotionBridge> {
+        if (isNil(config.id)) {
+            throw new Error('Invalid bridge configuration. Missing [id] setting');
+        }
         if (isNil(config.ip)) {
             throw new Error('Invalid bridge configuration. Missing [ip] setting');
         }
@@ -38,12 +41,23 @@ export class MotionBridge {
     constructor(config: MotionBridge.Config, client: MotionClient, logger: ILogger) {
         this.config = config;
         this.client = client;
+        this.client.on('error', error => {
+            this.logger.error(`Bridge encountered an error. ${error}`);
+        });
+        this.client.on('report', (device) => {
+            const update = toUpdate(device);
+            this.emitter.emit('deviceUpdate', update, MotionBridge.UpdateType.Report);
+        });
         this.pollInterval = bound(config.pollInterval ?? MotionBridge.DEFAULT_POLL_INTERVAL, 30, Number.MAX_VALUE) * 1000;
         this.logger = logger.getLogger('bridge', config.name ?? config.ip);
     }
 
     get id() {
-        return this.client.id;
+        return this.config.id;
+    }
+
+    get ip() {
+        return this.config.ip;
     }
 
     get name() {
@@ -54,14 +68,11 @@ export class MotionBridge {
         return this.client.availability.available;
     }
 
+    get availability() {
+        return this.client.availability;
+    }
+
     async start() {
-        this.client.on('error', error => {
-            this.logger.error(`Bridge encountered an error. ${error}`);
-        });
-        this.client.on('report', (device) => {
-            const update = toUpdate(device);
-            this.emitter.emit('deviceUpdate', update, MotionBridge.UpdateType.Report);
-        });
         await this.client.start();
         this.pollDevices().then()
         this.logger.debug(`Bridge client started [${this.config.ip}], name [${this.config.name}]`);
@@ -117,7 +128,6 @@ export class MotionBridge {
     private async pollDevices() {
         this.logger.debug(`polling devices...`);
         const devices = await this.client.getAllDevices();
-        const now = Date.now();
         clearTimeout(this.pollingTimeout);
         this.pollingTimeout = setTimeout(this.pollDevices.bind(this), this.pollInterval);
         for (const device of devices) {
@@ -134,8 +144,8 @@ export class MotionBridge {
 
 export namespace MotionBridge {
 
-
     export type Config = {
+        id: string,
         ip: string,
         key: string,
         name?: string,

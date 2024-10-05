@@ -12,6 +12,12 @@
           "title": "Bridge",
           "type": "object",
           "properties": {
+            "id": {
+              "title": "Bridge ID",
+              "type": "string",
+              "required": true,
+              "description": "Every bridge must have a given unique id. Assigning the ID (and not relying on the bridge's MAC, makes it possible to determine which accessories to keep/remove in case one of the bridges is, for some reason, not accessible"
+            },
             "ip": {
               "title": "IP",
               "type": "string",
