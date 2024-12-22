@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.2](https://github.com/uboness/homebridge-motionblinds/compare/v0.1.1...v0.1.2) (2024-12-22)
+
+
+### Bug Fixes
+
+* removed use of inner HB api (in logger) ([572a7ce](https://github.com/uboness/homebridge-motionblinds/commit/572a7ce1a818eac008fc8ba0a526d7eaec735bea))
+
 ## [0.1.1](https://github.com/uboness/homebridge-motionblinds/compare/v0.1.0...v0.1.1) (2024-12-22)
 
 ## [0.1.0](https://github.com/uboness/homebridge-motionblinds/compare/v0.0.3...v0.1.0) (2024-10-05)
