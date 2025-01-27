@@ -111,12 +111,22 @@ export class MotionBlindsPlatform implements DynamicPlatformPlugin {
             this.log.error(`Failed to connect to bridge [${bridge.name}][${bridge.ip}] ${maxRetries} times... aborting`);
             return;
         }
-        this.startBridge(bridge).catch(error => {
-            this.log.error(`Failed to connect to bridge [${bridge.ip}]. ${error}`);
-            const seconds = Math.pow(2, attempt) * 5;
-            this.log.info(`[${bridge.name}][${bridge.ip}] Retrying to connect in ${seconds} seconds`);
-            setTimeout(() => this.initBridge(bridge, attempt + 1, maxRetries), seconds * 1000);
-        });
+        if (attempt === 0) {
+            this.log.info(`Re/connecting to bridge [${bridge.ip}]...`);
+        } else {
+            this.log.info(`Re/connecting to bridge [${bridge.ip}] (attempt [${attempt}])...`);
+        }
+
+        this.startBridge(bridge)
+            .then(() => {
+                this.log.info(`Connected bridge [${bridge.ip}].`);
+            })
+            .catch(error => {
+                this.log.error(`Failed to connect to bridge [${bridge.ip}]. ${error}`);
+                const seconds = Math.pow(2, attempt) * 5;
+                this.log.info(`[${bridge.name}][${bridge.ip}] Retrying to connect in ${seconds} seconds`);
+                setTimeout(() => this.initBridge(bridge, attempt + 1, maxRetries), seconds * 1000);
+            });
     }
 
 
