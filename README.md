@@ -10,6 +10,8 @@ Connects to MOTION Wi-Fi Mini bridge and enables controller MotionBlinds curtain
 
 ### !! Experimental !!
 
+[![Build](https://github.com/uboness/homebridge-motionblinds/actions/workflows/build.yml/badge.svg)](https://github.com/uboness/homebridge-motionblinds/actions/workflows/build.yml)
+
 </span>
 
 > [!IMPORTANT]
