@@ -3,7 +3,7 @@ import { clearTimeout } from 'timers';
 import { Availability } from '../Availability.js';
 import { bound, Detachable, isNil, isUndefined } from '../common.js';
 import { ILogger } from '../Logger.js';
-import { API, MotionClient } from './motion/index.js';
+import { API, MotionClient } from './motion';
 
 export class MotionBridge {
 
@@ -125,13 +125,21 @@ export class MotionBridge {
         }
     }
 
-    private async pollDevices() {
-        this.logger.debug(`polling devices...`);
-        const devices = await this.client.getAllDevices();
+    private backoffs = [3, 5, 8]
+    private async pollDevices(attempt = 1) {
+        this.logger.debug(attempt === 1 ? `polling devices...` : `polling devices (attempt [${attempt}])...`);
         clearTimeout(this.pollingTimeout);
-        this.pollingTimeout = setTimeout(this.pollDevices.bind(this), this.pollInterval);
-        for (const device of devices) {
-            this.emitter.emit('deviceUpdate', toUpdate(device), MotionBridge.UpdateType.Poll);
+        try {
+            const devices = await this.client.getAllDevices();
+            for (const device of devices) {
+                this.emitter.emit('deviceUpdate', toUpdate(device), MotionBridge.UpdateType.Poll);
+            }
+            this.pollingTimeout = setTimeout(() => this.pollDevices(), this.pollInterval);
+        } catch (e) {
+            this.logger.error(`device polling failed`, e);
+            const timeout = attempt > this.backoffs.length ? this.backoffs[this.backoffs.length - 1] : this.backoffs[attempt - 1];
+            this.logger.info(`attempting to poll again in [${timeout}] seconds...`, e);
+            this.pollingTimeout = setTimeout(() => this.pollDevices(attempt + 1), timeout * 1000);
         }
     }
 

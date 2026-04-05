@@ -19,7 +19,7 @@
     "url": "https://github.com/uboness/homebridge-motionblinds/issues"
   },
   "engines": {
-    "node": "^18.17.0 || ^20.9.0",
+    "node": "^18.17.0 || ^20.9.0 || ^21.0.0 || ^22.22.0",
     "homebridge": "^1.8.0"
   },
   "exports": {
@@ -53,8 +53,8 @@
     "@inquirer/prompts": "^3.3.2",
     "@types/node": "^18.19.51",
     "commit-and-tag-version": "^12.4.4",
-    "homebridge": "^1.8.4",
-    "homebridge-config-ui-x": "4.52.3",
+    "homebridge": "^1.11.4",
+    "homebridge-config-ui-x": "5.21.0",
     "rimraf": "^3.0.2",
     "typescript": "^4.9.5"
   }
