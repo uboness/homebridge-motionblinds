@@ -138,7 +138,7 @@ export class MotionBridge {
         } catch (e) {
             this.logger.error(`device polling failed`, e);
             const timeout = attempt > this.backoffs.length ? this.backoffs[this.backoffs.length - 1] : this.backoffs[attempt - 1];
-            this.logger.info(`attempting to poll again in [${timeout}] seconds...`, e);
+            this.logger.info(`attempting to poll again in [${timeout}] seconds...`);
             this.pollingTimeout = setTimeout(() => this.pollDevices(attempt + 1), timeout * 1000);
         }
     }
