@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.4](https://github.com/uboness/homebridge-motionblinds/compare/v0.1.3...v0.1.4) (2026-04-08)
+
+
+### Bug Fixes
+
+* poll attempt logging ([62fdbf2](https://github.com/uboness/homebridge-motionblinds/commit/62fdbf2ff823b99e7c7878dcd5b9890cd7f59d61))
+
 ## [0.1.3](https://github.com/uboness/homebridge-motionblinds/compare/v0.1.2...v0.1.3) (2025-01-27)
 
 ## [0.1.2](https://github.com/uboness/homebridge-motionblinds/compare/v0.1.1...v0.1.2) (2024-12-22)
