@@ -15,7 +15,7 @@ importers:
         specifier: ^12.7.1
         version: 12.7.1
       homebridge:
-        specifier: ^1.11.4
+        specifier: 1.11.4
         version: 1.11.4
       homebridge-config-ui-x:
         specifier: 5.22.0
