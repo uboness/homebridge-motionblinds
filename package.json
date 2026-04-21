@@ -45,10 +45,14 @@
     "hb": "homebridge -D -I -U .homebridge -P $INIT_CWD",
     "prepublishOnly": "pnpm run build",
     "release:bump": "commit-and-tag-version",
+    "release:bump-minor": "commit-and-tag-version --release-as minor",
+    "release:bump-major": "commit-and-tag-version --release-as major",
     "release:postbump": "pnpm run release:push && pnpm run release:publish",
     "release:push": "git push --follow-tags",
     "release:publish": "npm publish --access public",
-    "release": "pnpm run release:bump && pnpm run release:push && pnpm run release:publish"
+    "release": "pnpm run release:bump && pnpm run release:push && pnpm run release:publish",
+    "release-minor": "pnpm run release:bump-minor && pnpm run release:push && pnpm run release:publish",
+    "release-major": "pnpm run release:bump-major && pnpm run release:push && pnpm run release:publish"
   },
   "devDependencies": {
     "@types/node": "^22.19.17",
