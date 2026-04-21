@@ -39,7 +39,8 @@
   ],
   "scripts": {
     "clean": "rimraf ./dist",
-    "build": "pnpm run clean && tsc",
+    "build": "tsc",
+    "cbuild": "pnpm run clean && pnpm run build",
     "watch": "pnpm run clean && tsc -w",
     "hb": "homebridge -D -I -U .homebridge -P $INIT_CWD",
     "prepublishOnly": "pnpm run build",
@@ -50,12 +51,11 @@
     "release": "pnpm run release:bump && pnpm run release:push && pnpm run release:publish"
   },
   "devDependencies": {
-    "@inquirer/prompts": "^3.3.2",
-    "@types/node": "^18.19.51",
-    "commit-and-tag-version": "^12.4.4",
+    "@types/node": "^22.19.17",
+    "commit-and-tag-version": "^12.7.1",
     "homebridge": "^1.11.4",
-    "homebridge-config-ui-x": "5.21.0",
-    "rimraf": "^3.0.2",
-    "typescript": "^4.9.5"
+    "homebridge-config-ui-x": "5.22.0",
+    "rimraf": "^6.1.3",
+    "typescript": "^6.0.3"
   }
 }
