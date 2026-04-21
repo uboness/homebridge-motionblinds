@@ -15,8 +15,8 @@ importers:
         specifier: ^12.7.1
         version: 12.7.1
       homebridge:
-        specifier: 2.0.0-beta.99
-        version: 2.0.0-beta.99
+        specifier: 1.11.4
+        version: 1.11.4
       homebridge-config-ui-x:
         specifier: 5.22.0
         version: 5.22.0
@@ -89,8 +89,8 @@ packages:
   '@fastify/static@9.1.1':
     resolution: {integrity: sha512-LHxFea3qdwe0Pbbkh/yux7/k6nFNLGTNcbLKVYgmRDB6LdDE/8TFSO7qWZ0IzM/nF6iwR8W03oFlwe4v79R1Ow==}
 
-  '@homebridge/ciao@1.3.7-beta.0':
-    resolution: {integrity: sha512-5weIVai/zPePxedfTCuXGcx+hdItlTzow7mK7Q2xmT/7dQ4WX+HoCuMIXQSR1oFs1fNc4v/9yAqZmuWcC+4cMA==}
+  '@homebridge/ciao@1.3.6':
+    resolution: {integrity: sha512-2F9N/15Q/GnoBXimr8PFg7fb1QrAQBvuZpaW2kseWOOy14Lzc3yZB1mT9N1Ju/4hlkboU33uHxtOxZkvkPoE/w==}
     hasBin: true
 
   '@homebridge/dbus-native@0.7.4':
@@ -99,10 +99,6 @@ packages:
 
   '@homebridge/hap-client@4.0.3':
     resolution: {integrity: sha512-7k8dXdV8wFB6HTUmUBECWNgA09eN1n+JdpRQgF+BJET3eV8grFHG5LuFLoWknv7of/tQEVsePGUMPxK3g1w0ug==}
-
-  '@homebridge/hap-nodejs@2.1.3-beta.1':
-    resolution: {integrity: sha512-1PLNe8E4u0L5NMvVIxutS1ujZKVPYAvTjEZ/Vc23khI2p6UO07RkkWU36tADNYevjX5n+d18nPOXg5Y2s8FdsQ==}
-    engines: {node: ^22 || ^24}
 
   '@homebridge/node-pty-prebuilt-multiarch@0.13.1':
     resolution: {integrity: sha512-ccQ60nMcbEGrQh0U9E6x0ajW9qJNeazpcM/9CH6J8leyNtJgb+gu24WTBAfBUVeO486ZhscnaxLEITI2HXwhow==}
@@ -126,28 +122,6 @@ packages:
   '@lukeed/ms@2.0.2':
     resolution: {integrity: sha512-9I2Zn6+NJLfaGoz9jN3lpwDgAYvfGeNYdbAIjJOqzs4Tpc+VU3Jqq4IofSUBKajiDS8k9fZIg18/z13mpk1bsA==}
     engines: {node: '>=8'}
-
-  '@matter/general@0.17.0-alpha.0-20260417-8f958ba0d':
-    resolution: {integrity: sha512-Uc/S8pqZs7KABiRHZLa//sPH8mSOBA2+sPTGce7sezbU/CIWmGzu42g4xBEUzedIERU33iWcDgNlYw+fiKFjPA==}
-
-  '@matter/main@0.17.0-alpha.0-20260417-8f958ba0d':
-    resolution: {integrity: sha512-x6d5HsyB77dq811ZaYXcDvkRjkKJ7oS1XbPggDHLi6rwlD0pOicIgH+9UNGGrZTPj/9sLg5cVn9NbDe+/HTumw==}
-
-  '@matter/model@0.17.0-alpha.0-20260417-8f958ba0d':
-    resolution: {integrity: sha512-uMZYbpRTAwQTbt7jBnq0jZoQ12QD5dn+XL4u4VL5tgFdEAsIXny2iKH21N0oL7TdzHn2EYk8s7S6japB4gmXhg==}
-
-  '@matter/node@0.17.0-alpha.0-20260417-8f958ba0d':
-    resolution: {integrity: sha512-wx4N3pHzoWkF9ajwkG7ITsK4FolVcLyiQvmZkVuahtAGRUm7+RAFCBc0zFZ91fVcARYiOBDvKeNWuhQOn8+0nw==}
-
-  '@matter/nodejs@0.17.0-alpha.0-20260417-8f958ba0d':
-    resolution: {integrity: sha512-TI63eYUpke1xQOh+DHiNi1kXLySBEJUb/cKOS+RDoq88STSOin2OhXd4w/TrFFnpWw5VrZ4oCYEWmCT+GbDRGg==}
-    engines: {node: '>=20.19.0 <22.0.0 || >=22.13.0'}
-
-  '@matter/protocol@0.17.0-alpha.0-20260417-8f958ba0d':
-    resolution: {integrity: sha512-Y16QeByXyfooAZ3jMwdkOSYyuNbLMa8EpQvo4Yvd4EQydhFMonioXaEpxRGuvQuQzyHDYhkgQ5gQKxXlJSDURg==}
-
-  '@matter/types@0.17.0-alpha.0-20260417-8f958ba0d':
-    resolution: {integrity: sha512-Caam+T6SOqFuyRMRZCheo/GK0MDO9dgN4itiaGyJmoW9IRm544NnCwAFhwSRKBKmF48XsfEWnadGBCvDoTbxzg==}
 
   '@microsoft/tsdoc@0.16.0':
     resolution: {integrity: sha512-xgAyonlVVS+q7Vc7qLW0UrJU7rSFcETRWsqdXZtjzRU8dF+6CkozTK4V4y1LwOX7j8r/vHphjDeMeGI4tNGeGA==}
@@ -263,16 +237,8 @@ packages:
       '@nestjs/platform-socket.io':
         optional: true
 
-  '@noble/curves@2.2.0':
-    resolution: {integrity: sha512-T/BoHgFXirb0ENSPBquzX0rcjXeM6Lo892a2jlYJkqk83LqZx0l1Of7DzlKJ6jkpvMrkHSnAcgb5JegL8SeIkQ==}
-    engines: {node: '>= 20.19.0'}
-
   '@noble/hashes@2.0.1':
     resolution: {integrity: sha512-XlOlEbQcE9fmuXxrVTXCTlG2nlRXa9Rj3rr5Ue/+tX+nmkgbX720YHh0VR3hBF9xDvwnb8D2shVGOwNx+ulArw==}
-    engines: {node: '>= 20.19.0'}
-
-  '@noble/hashes@2.2.0':
-    resolution: {integrity: sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg==}
     engines: {node: '>= 20.19.0'}
 
   '@nodable/entities@2.1.0':
@@ -469,6 +435,10 @@ packages:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
     engines: {node: '>=4'}
 
+  chalk@4.1.2:
+    resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
+    engines: {node: '>=10'}
+
   chalk@5.6.2:
     resolution: {integrity: sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
@@ -521,6 +491,10 @@ packages:
   combined-stream@1.0.8:
     resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
     engines: {node: '>= 0.8'}
+
+  commander@13.1.0:
+    resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
+    engines: {node: '>=18'}
 
   commander@14.0.3:
     resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
@@ -956,6 +930,10 @@ packages:
     engines: {node: '>=0.4.7'}
     hasBin: true
 
+  hap-nodejs@0.14.3:
+    resolution: {integrity: sha512-kl7z4r84WN/bjQmO2OA8+RefPVtPQw6k2hs7/q1+ROghE9G6C5f/yNenR7/yYnZLfXMXQfY4yLiYY5uLCKXT1w==}
+    engines: {node: ^18 || ^20 || ^22 || ^24}
+
   hard-rejection@2.1.0:
     resolution: {integrity: sha512-VIZB+ibDhx7ObhAe7OVtoEbuP4h/MuOTHJ+J8h/eBXotJYl0fBgR72xDFCKgIh22OJZIOVNxBMWuhAr10r8HdA==}
     engines: {node: '>=6'}
@@ -963,6 +941,10 @@ packages:
   has-flag@3.0.0:
     resolution: {integrity: sha512-sKJf1+ceQBr4SMkvQnBDNDtf4TXpVhVGateu0t918bl30FnbE2m4vNLX+VWe/dpjlb+HugGYzW7uQXH98HPEYw==}
     engines: {node: '>=4'}
+
+  has-flag@4.0.0:
+    resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
+    engines: {node: '>=8'}
 
   has-symbols@1.1.0:
     resolution: {integrity: sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ==}
@@ -990,9 +972,9 @@ packages:
     engines: {homebridge: ^1.8.0 || ^2.0.0-alpha.0, node: ^20.19.0 || ^22.12.0 || ^24.0.0}
     hasBin: true
 
-  homebridge@2.0.0-beta.99:
-    resolution: {integrity: sha512-wBRHxFRmIiCEtCycWjZjMc5lmXShOPfOdgnow5+R0SxosPxGbeNuOqFJTOuDCcHZr7plwsYxmfeVL3bRU93Sqg==}
-    engines: {node: ^22 || ^24}
+  homebridge@1.11.4:
+    resolution: {integrity: sha512-8rffC5N+vG/AaZwWwKB30m4pDauFVM1zRauY4mPk5dTpRv8+4QLC8dG7arLe6mW+i5UM8Q5lUeNyBdSjrIukkA==}
+    engines: {node: ^18.15.0 || ^20.7.0 || ^22 || ^24}
     hasBin: true
 
   hosted-git-info@2.8.9:
@@ -1745,6 +1727,10 @@ packages:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
     engines: {node: '>=4'}
 
+  supports-color@7.2.0:
+    resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
+    engines: {node: '>=8'}
+
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
@@ -2056,7 +2042,7 @@ snapshots:
       fastq: 1.17.1
       glob: 13.0.6
 
-  '@homebridge/ciao@1.3.7-beta.0':
+  '@homebridge/ciao@1.3.6':
     dependencies:
       debug: 4.4.3
       fast-deep-equal: 3.1.3
@@ -2083,21 +2069,6 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@homebridge/hap-nodejs@2.1.3-beta.1':
-    dependencies:
-      '@homebridge/ciao': 1.3.7-beta.0
-      '@homebridge/dbus-native': 0.7.4
-      bonjour-hap: 3.10.1
-      debug: 4.4.3
-      fast-srp-hap: 2.0.4
-      futoin-hkdf: 1.5.3
-      node-persist: 0.0.12
-      source-map-support: 0.5.21
-      tslib: 2.8.1
-      tweetnacl: 1.0.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@homebridge/node-pty-prebuilt-multiarch@0.13.1':
     dependencies:
       node-addon-api: 7.1.1
@@ -2114,50 +2085,6 @@ snapshots:
   '@lukeed/csprng@1.1.0': {}
 
   '@lukeed/ms@2.0.2': {}
-
-  '@matter/general@0.17.0-alpha.0-20260417-8f958ba0d':
-    dependencies:
-      '@noble/curves': 2.2.0
-
-  '@matter/main@0.17.0-alpha.0-20260417-8f958ba0d':
-    dependencies:
-      '@matter/general': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/model': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/node': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/protocol': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/types': 0.17.0-alpha.0-20260417-8f958ba0d
-    optionalDependencies:
-      '@matter/nodejs': 0.17.0-alpha.0-20260417-8f958ba0d
-
-  '@matter/model@0.17.0-alpha.0-20260417-8f958ba0d':
-    dependencies:
-      '@matter/general': 0.17.0-alpha.0-20260417-8f958ba0d
-
-  '@matter/node@0.17.0-alpha.0-20260417-8f958ba0d':
-    dependencies:
-      '@matter/general': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/model': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/protocol': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/types': 0.17.0-alpha.0-20260417-8f958ba0d
-
-  '@matter/nodejs@0.17.0-alpha.0-20260417-8f958ba0d':
-    dependencies:
-      '@matter/general': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/node': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/protocol': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/types': 0.17.0-alpha.0-20260417-8f958ba0d
-    optional: true
-
-  '@matter/protocol@0.17.0-alpha.0-20260417-8f958ba0d':
-    dependencies:
-      '@matter/general': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/model': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/types': 0.17.0-alpha.0-20260417-8f958ba0d
-
-  '@matter/types@0.17.0-alpha.0-20260417-8f958ba0d':
-    dependencies:
-      '@matter/general': 0.17.0-alpha.0-20260417-8f958ba0d
-      '@matter/model': 0.17.0-alpha.0-20260417-8f958ba0d
 
   '@microsoft/tsdoc@0.16.0': {}
 
@@ -2272,13 +2199,7 @@ snapshots:
     optionalDependencies:
       '@nestjs/platform-socket.io': 11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.19)(rxjs@7.8.2)
 
-  '@noble/curves@2.2.0':
-    dependencies:
-      '@noble/hashes': 2.2.0
-
   '@noble/hashes@2.0.1': {}
-
-  '@noble/hashes@2.2.0': {}
 
   '@nodable/entities@2.1.0': {}
 
@@ -2481,6 +2402,11 @@ snapshots:
       escape-string-regexp: 1.0.5
       supports-color: 5.5.0
 
+  chalk@4.1.2:
+    dependencies:
+      ansi-styles: 4.3.0
+      supports-color: 7.2.0
+
   chalk@5.6.2: {}
 
   chownr@1.1.4: {}
@@ -2530,6 +2456,8 @@ snapshots:
   combined-stream@1.0.8:
     dependencies:
       delayed-stream: 1.0.0
+
+  commander@13.1.0: {}
 
   commander@14.0.3: {}
 
@@ -3017,9 +2945,26 @@ snapshots:
     optionalDependencies:
       uglify-js: 3.19.3
 
+  hap-nodejs@0.14.3:
+    dependencies:
+      '@homebridge/ciao': 1.3.6
+      '@homebridge/dbus-native': 0.7.4
+      bonjour-hap: 3.10.1
+      debug: 4.4.3
+      fast-srp-hap: 2.0.4
+      futoin-hkdf: 1.5.3
+      node-persist: 0.0.12
+      source-map-support: 0.5.21
+      tslib: 2.8.1
+      tweetnacl: 1.0.3
+    transitivePeerDependencies:
+      - supports-color
+
   hard-rejection@2.1.0: {}
 
   has-flag@3.0.0: {}
+
+  has-flag@4.0.0: {}
 
   has-symbols@1.1.0: {}
 
@@ -3090,13 +3035,12 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  homebridge@2.0.0-beta.99:
+  homebridge@1.11.4:
     dependencies:
-      '@homebridge/hap-nodejs': 2.1.3-beta.1
-      '@matter/main': 0.17.0-alpha.0-20260417-8f958ba0d
-      chalk: 5.6.2
-      commander: 14.0.3
+      chalk: 4.1.2
+      commander: 13.1.0
       fs-extra: 11.3.4
+      hap-nodejs: 0.14.3
       qrcode-terminal: 0.12.0
       semver: 7.7.4
       source-map-support: 0.5.21
@@ -3837,6 +3781,10 @@ snapshots:
   supports-color@5.5.0:
     dependencies:
       has-flag: 3.0.0
+
+  supports-color@7.2.0:
+    dependencies:
+      has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
