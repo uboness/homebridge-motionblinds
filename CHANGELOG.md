@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.2.0](https://github.com/uboness/homebridge-motionblinds/compare/v0.1.4...v0.2.0) (2026-04-21)
+
+
+### Features
+
+* also support node v24 ([eb4be75](https://github.com/uboness/homebridge-motionblinds/commit/eb4be7532d3e5d8d2336ac1622fb4b6242f2bfc1))
+* support homebridge v2 while keeping v1 compatibility ([f15a0b7](https://github.com/uboness/homebridge-motionblinds/commit/f15a0b7cada993d7c5743641cd2690d5a78534b3))
+
+
+### Bug Fixes
+
+* updated dependencies ([f65309a](https://github.com/uboness/homebridge-motionblinds/commit/f65309a1e06031e9e084a39682b7eeb2afa822b7))
+
 ## [0.1.4](https://github.com/uboness/homebridge-motionblinds/compare/v0.1.3...v0.1.4) (2026-04-08)
 
 
