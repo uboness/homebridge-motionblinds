@@ -19,7 +19,7 @@
     "url": "https://github.com/uboness/homebridge-motionblinds/issues"
   },
   "engines": {
-    "node": "^18.17.0 || ^20.9.0 || ^21.0.0 || ^22",
+    "node": "^18.17.0 || ^20.9.0 || ^21.0.0 || ^22 || v24",
     "homebridge": "^1.8.0 || ^2.0.0-beta.0"
   },
   "exports": {
